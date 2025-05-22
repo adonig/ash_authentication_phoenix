@@ -110,4 +110,46 @@ defmodule AshAuthentication.Phoenix.ControllerTest do
     })
     |> Ash.create!()
   end
+
+  test "sign-in with redirect param redirects to target", %{conn: conn} do
+    strategy = AshAuthentication.Info.strategy!(Example.Accounts.User, :password)
+    email = "with-redirect@email"
+    password = "sign.in.secret"
+    create_user!(strategy, email, password)
+
+    {:ok, lv, _html} = live(conn, ~p"/sign-in?next=/account")
+
+    lv
+    |> form(~s{[action="/auth/user/password/sign_in?"]},
+      user: %{strategy.identity_field => email, strategy.password_field => password},
+      redirect_param_name: "next",
+      next: "/account"
+    )
+    |> render_submit()
+
+    assert_received {_ref, {:redirect, _topic, %{to: token_url}}}
+
+    conn = get(build_conn(), token_url)
+    assert redirected_to(conn, 302) == "/account"
+  end
+
+  test "sign-in without redirect param shows success", %{conn: conn} do
+    strategy = AshAuthentication.Info.strategy!(Example.Accounts.User, :password)
+    email = "no-redirect@email"
+    password = "sign.in.secret"
+    create_user!(strategy, email, password)
+
+    {:ok, lv, _html} = live(conn, "/sign-in")
+
+    lv
+    |> form(~s{[action="/auth/user/password/sign_in?"]},
+      user: %{strategy.identity_field => email, strategy.password_field => password}
+    )
+    |> render_submit()
+
+    assert_received {_ref, {:redirect, _topic, %{to: token_url}}}
+
+    conn = get(build_conn(), token_url)
+    assert html_response(conn, 200) =~ "Success"
+  end
 end

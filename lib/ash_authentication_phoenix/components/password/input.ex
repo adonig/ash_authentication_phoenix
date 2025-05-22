@@ -329,4 +329,37 @@ defmodule AshAuthentication.Phoenix.Components.Password.Input do
     |> Form.errors()
     |> Keyword.has_key?(field)
   end
+
+  @spec hidden_redirect_param_name_field(%{
+          required(:form) => Form.t(),
+          required(:context) => map
+        }) :: Rendered.t() | no_return
+  def hidden_redirect_param_name_field(assigns) do
+    with %{redirect_param_name: name} <- assigns.context do
+      assigns = assign(assigns, name: name)
+
+      ~H"""
+      <input type="hidden" name="redirect_param_name" value={@name} />
+      """
+    else
+      _ ->
+        ~H""
+    end
+  end
+
+  @spec hidden_redirect_field(%{
+          required(:form) => Form.t(),
+          required(:context) => map
+        }) :: Rendered.t() | no_return
+  def hidden_redirect_field(assigns) do
+    with %{redirect_param_name: name, redirect_param_value: value} <- assigns.context do
+      assigns = assign(assigns, name: name, value: value)
+
+      ~H"""
+      <input type="hidden" name={@name} value={@value} />
+      """
+    else
+      _ -> ~H""
+    end
+  end
 end

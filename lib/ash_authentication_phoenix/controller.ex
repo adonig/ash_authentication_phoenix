@@ -121,10 +121,20 @@ defmodule AshAuthentication.Phoenix.Controller do
             ) ::
               Conn.t()
       def success(conn, _activity, user, _token) do
-        conn
-        |> store_in_session(user)
-        |> put_status(200)
-        |> render("success.html")
+        IO.inspect(conn)
+
+        conn = conn |> store_in_session(user) |> assign(:current_user, user)
+
+        with name when not is_nil(name) <- conn.params["redirect_param_name"],
+             value when not is_nil(value) <- conn.params[name] do
+          conn
+          |> redirect(to: value)
+        else
+          _ ->
+            conn
+            |> put_status(200)
+            |> render("success.html")
+        end
       end
 
       @doc false

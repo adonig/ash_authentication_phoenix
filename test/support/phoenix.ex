@@ -107,6 +107,12 @@ defmodule AshAuthentication.Phoenix.Test.Router do
                 auth_routes_prefix: "/auth",
                 gettext_backend: {AshAuthentication.Phoenix.Test.Gettext, "test"},
                 as: :gettext_backend
+
+    # Sign-in with overridden redirect param name
+    sign_in_route path: "/sign-in-return",
+                  auth_routes_prefix: "/auth",
+                  overrides: [AshAuthentication.Phoenix.Test.Overrides],
+                  as: :return
   end
 
   scope "/nested", AshAuthentication.Phoenix.Test do
@@ -137,6 +143,11 @@ defmodule AshAuthentication.Phoenix.Test.Router do
     pipe_through(:browser)
 
     live("/", HomeLive, :index)
+
+    ash_authentication_live_session :authentication_required,
+      on_mount: {AshAuthentication.Phoenix.Test.LiveUserAuth, :live_user_required} do
+      live "/protected", ProtectedLive, :index
+    end
   end
 
   @doc false

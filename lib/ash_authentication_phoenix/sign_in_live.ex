@@ -1,5 +1,6 @@
 defmodule AshAuthentication.Phoenix.SignInLive do
   use AshAuthentication.Phoenix.Overrides.Overridable,
+    redirect_param_name: "Name of the query/form parameter used for redirecting after sign-in.",
     root_class: "CSS class for the root `div` element.",
     sign_in_id: "Element ID for the `SignIn` LiveComponent."
 
@@ -38,7 +39,7 @@ defmodule AshAuthentication.Phoenix.SignInLive do
       |> assign(:register_path, session["register_path"])
       |> assign(:current_tenant, session["tenant"])
       |> assign(:resources, session["resources"])
-      |> assign(:context, session["context"] || %{})
+      |> assign_new(:context, fn -> session["context"] || %{} end)
       |> assign(:auth_routes_prefix, session["auth_routes_prefix"])
       |> assign(:gettext_fn, session["gettext_fn"])
 
@@ -46,8 +47,21 @@ defmodule AshAuthentication.Phoenix.SignInLive do
   end
 
   @impl true
-  def handle_params(_, _uri, socket) do
-    {:noreply, socket}
+  def handle_params(params, _uri, socket) do
+    redirect_param_name = override_for(socket.assigns.overrides, :redirect_param_name)
+
+    case Map.fetch(params, redirect_param_name) do
+      {:ok, redirect_param_value} ->
+        context =
+          socket.assigns.context
+          |> Map.put(:redirect_param_name, redirect_param_name)
+          |> Map.put(:redirect_param_value, redirect_param_value)
+
+        {:noreply, assign(socket, context: context)}
+
+      :error ->
+        {:noreply, socket}
+    end
   end
 
   @doc false

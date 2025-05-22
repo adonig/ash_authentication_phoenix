@@ -127,6 +127,8 @@ defmodule AshAuthentication.Phoenix.Components.Password.SignInForm do
         method="POST"
         class={override_for(@overrides, :form_class)}
       >
+        <Password.Input.hidden_redirect_param_name_field form={form} context={@context} />
+        <Password.Input.hidden_redirect_field form={form} context={@context} />
         <Password.Input.identity_field
           strategy={@strategy}
           form={form}
@@ -185,6 +187,18 @@ defmodule AshAuthentication.Phoenix.Components.Password.SignInForm do
              read_one?: true
            ) do
         {:ok, user} ->
+          redirect_param_name = socket.assigns.context[:redirect_param_name]
+          redirect_param_value = socket.assigns.context[:redirect_param_value]
+
+          auth_path_params =
+            [token: user.__metadata__.token] ++
+              if redirect_param_value,
+                do: [
+                  {"redirect_param_name", redirect_param_name},
+                  {redirect_param_name, redirect_param_value}
+                ],
+                else: []
+
           validate_sign_in_token_path =
             auth_path(
               socket,
@@ -192,7 +206,7 @@ defmodule AshAuthentication.Phoenix.Components.Password.SignInForm do
               socket.assigns.auth_routes_prefix,
               socket.assigns.strategy,
               :sign_in_with_token,
-              token: user.__metadata__.token
+              auth_path_params
             )
 
           {:noreply, redirect(socket, to: validate_sign_in_token_path)}

@@ -16,6 +16,7 @@ defmodule AshAuthentication.Phoenix.Overrides.Default do
   }
 
   override SignInLive do
+    set :redirect_param_name, "next"
     set :root_class, "grid h-screen place-items-center dark:bg-gray-900"
   end
 

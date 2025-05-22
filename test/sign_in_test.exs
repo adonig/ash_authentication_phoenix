@@ -93,4 +93,18 @@ defmodule AshAuthentication.Phoenix.SignInTest do
     refute html =~ "Sign in"
     assert html =~ "ever gonna"
   end
+
+  test "sign-in form includes hidden redirect fields if present in context", %{conn: conn} do
+    conn = get(conn, "/sign-in", %{"next" => "/dashboard"})
+    assert {:ok, _view, html} = live(conn)
+    assert html =~ ~s|<input type="hidden" name="redirect_param_name" value="next"|
+    assert html =~ ~s|<input type="hidden" name="next" value="/dashboard"|
+  end
+
+  test "custom redirect_param_name override is respected", %{conn: conn} do
+    conn = get(conn, "/sign-in-return", %{"return_to" => "/account"})
+    assert {:ok, _view, html} = live(conn)
+    assert html =~ ~s|<input type="hidden" name="redirect_param_name" value="return_to"|
+    assert html =~ ~s|<input type="hidden" name="return_to" value="/account"|
+  end
 end
