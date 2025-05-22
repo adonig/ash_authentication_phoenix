@@ -5,21 +5,22 @@ defmodule AshAuthentication.Phoenix.LiveAuthFlowTest do
   test "unauthenticated user is redirected to sign-in and back to original page after login", %{
     conn: conn
   } do
-    # Schritt 1: Zugriff auf geschützte LiveView ohne Login → Redirect zu /sign-in
+    # Step 1: Accessing a protected LiveView without authentication → triggers redirect to /sign-in
     {:error, {:redirect, %{to: sign_in_url}}} = live(conn, "/protected")
 
     assert sign_in_url =~ "/sign-in"
     assert sign_in_url =~ "next=%2Fprotected"
 
-    # Schritt 2: User registrieren oder sicherstellen, dass er existiert
+    # Step 2: Register a user or ensure the user exists
     strategy = AshAuthentication.Info.strategy!(Example.Accounts.User, :password)
     email = "testuser@example.com"
     password = "secure123"
     create_user!(strategy, email, password)
 
-    # Schritt 3: Simuliere Login mit next=/protected
+    # Step 3: Simulate visiting the sign-in page with a redirect param (`next=/protected`)
     {:ok, lv, _html} = live(conn, ~p"/sign-in?next=/protected")
 
+    # Submit the login form → should trigger a redirect to the token-based login URL
     {:error, {:redirect, %{to: token_url}}} =
       lv
       |> form(~s{[action="/auth/user/password/sign_in?"]},
@@ -29,6 +30,7 @@ defmodule AshAuthentication.Phoenix.LiveAuthFlowTest do
       )
       |> render_submit()
 
+    # Follow the redirect to the token URL → should finally redirect to the original /protected path
     conn = get(build_conn(), token_url)
     assert redirected_to(conn, 302) == "/protected"
   end
