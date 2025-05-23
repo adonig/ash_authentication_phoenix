@@ -125,8 +125,8 @@ defmodule AshAuthentication.Phoenix.Controller do
 
         with name when not is_nil(name) <- conn.params["redirect_param_name"],
              value when not is_nil(value) <- conn.params[name] do
-          conn
-          |> redirect(to: value)
+          sanitized_path = AshAuthentication.Phoenix.Utils.Redirect.sanitize_path(value)
+          conn |> redirect(to: sanitized_path)
         else
           _ ->
             conn

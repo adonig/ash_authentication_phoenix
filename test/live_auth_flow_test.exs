@@ -37,7 +37,7 @@ defmodule AshAuthentication.Phoenix.LiveAuthFlowTest do
 
   test "authenticated user accesses protected liveview directly", %{conn: conn} do
     strategy = AshAuthentication.Info.strategy!(Example.Accounts.User, :password)
-    email = "sign.in@email"
+    email = "sign.in.live@email"
     password = "sign.in.secret"
     create_user!(strategy, email, password)
     conn = sign_in_user(conn, strategy, email, password)
