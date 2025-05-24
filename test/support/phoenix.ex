@@ -144,10 +144,23 @@ defmodule AshAuthentication.Phoenix.Test.Router do
 
     live("/", HomeLive, :index)
 
+    ash_authentication_live_session :optional_user,
+      on_mount: {AshAuthentication.Phoenix.Test.LiveUserAuth, :live_user_optional} do
+      live "/optional", OptionalLive, :index
+    end
+
     ash_authentication_live_session :authentication_required,
       on_mount: {AshAuthentication.Phoenix.Test.LiveUserAuth, :live_user_required} do
       live "/protected", ProtectedLive, :index
     end
+
+    sign_in_route(
+      path: "/sign-in-no-user",
+      auth_routes_prefix: "/auth",
+      overrides: [AshAuthentication.Phoenix.Test.Overrides],
+      on_mount: [{AshAuthentication.Phoenix.Test.LiveUserAuth, :live_no_user}],
+      as: :return_sign_in
+    )
   end
 
   @doc false

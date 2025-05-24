@@ -46,6 +46,55 @@ defmodule AshAuthentication.Phoenix.LiveAuthFlowTest do
     assert html =~ "Protected Content"
   end
 
+  test "unauthenticated user can access /sign-in-no-user guarded by :live_no_user", %{conn: conn} do
+    {:ok, _view, html} = live(conn, "/sign-in-no-user")
+    assert html =~ "Sign in"
+  end
+
+  test "authenticated user accessing /sign-in-no-user is redirected to /", %{conn: conn} do
+    strategy = AshAuthentication.Info.strategy!(Example.Accounts.User, :password)
+    email = "already.signed.in@example.com"
+    password = "test12345"
+    create_user!(strategy, email, password)
+    conn = sign_in_user(conn, strategy, email, password)
+
+    {:error, {:redirect, %{to: redirect}}} = live(conn, "/sign-in-no-user")
+    assert redirect == "/"
+  end
+
+  test "authenticated user accessing /sign-in-no-user?next=/dashboard is redirected to /dashboard",
+       %{
+         conn: conn
+       } do
+    strategy = AshAuthentication.Info.strategy!(Example.Accounts.User, :password)
+    email = "redirected@example.com"
+    password = "test12345"
+    create_user!(strategy, email, password)
+    conn = sign_in_user(conn, strategy, email, password)
+
+    conn = get(conn, "/sign-in-no-user", %{"next" => "/dashboard"})
+    {:error, {:redirect, %{to: redirect}}} = live(conn)
+    assert redirect == "/dashboard"
+  end
+
+  test "unauthenticated user can access optional page", %{conn: conn} do
+    {:ok, _view, html} = live(conn, "/optional")
+    assert html =~ "Optional Content"
+    assert html =~ "Please log in to see personalized info."
+  end
+
+  test "authenticated user can access optional page", %{conn: conn} do
+    strategy = AshAuthentication.Info.strategy!(Example.Accounts.User, :password)
+    email = "optional@example.com"
+    password = "pass12345"
+    create_user!(strategy, email, password)
+    conn = sign_in_user(conn, strategy, email, password)
+
+    {:ok, _view, html} = live(conn, "/optional")
+    assert html =~ "Optional Content"
+    assert html =~ "Welcome #{email}"
+  end
+
   defp create_user!(strategy, email, password) do
     Example.Accounts.User
     |> Ash.Changeset.for_create(:register_with_password, %{
