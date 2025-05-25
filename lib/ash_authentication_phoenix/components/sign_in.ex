@@ -79,7 +79,6 @@ defmodule AshAuthentication.Phoenix.Components.SignIn do
         |> Enum.group_by(&strategy_style/1)
         |> Map.update(:form, [], &sort_strategies_by_name/1)
         |> Map.update(:link, [], &sort_strategies_by_name/1)
-        |> IO.inspect()
       end)
 
     socket =
