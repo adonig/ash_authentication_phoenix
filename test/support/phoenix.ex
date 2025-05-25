@@ -55,12 +55,21 @@ defmodule AshAuthentication.Phoenix.Test.HomeLive do
   end
 end
 
+defmodule AshAuthentication.Phoenix.Test.SuccessController do
+  use Phoenix.Controller
+
+  def index(conn, _params) do
+    send_resp(conn, 200, "SUCCESS")
+  end
+end
+
 defmodule AshAuthentication.Phoenix.Test.Router do
   @moduledoc false
   alias AshAuthentication.Phoenix.Test.ComponentsLive
   use Phoenix.Router
   import Phoenix.LiveView.Router
   use AshAuthentication.Phoenix.Router
+  import AshAuthentication.Phoenix.Test.UserAuthPlug
 
   pipeline :browser do
     plug(:accepts, ["html"])
@@ -161,6 +170,18 @@ defmodule AshAuthentication.Phoenix.Test.Router do
       on_mount: [{AshAuthentication.Phoenix.Test.LiveUserAuth, :live_no_user}],
       as: :return_sign_in
     )
+  end
+
+  scope "/require-user", AshAuthentication.Phoenix.Test do
+    pipe_through [:browser, :require_user]
+
+    get "/", SuccessController, :index
+  end
+
+  scope "/no-user", AshAuthentication.Phoenix.Test do
+    pipe_through [:browser, :no_user]
+
+    get "/", SuccessController, :index
   end
 
   @doc false
