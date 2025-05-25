@@ -79,6 +79,7 @@ defmodule AshAuthentication.Phoenix.Components.SignIn do
         |> Enum.group_by(&strategy_style/1)
         |> Map.update(:form, [], &sort_strategies_by_name/1)
         |> Map.update(:link, [], &sort_strategies_by_name/1)
+        |> IO.inspect()
       end)
 
     socket =
@@ -213,6 +214,7 @@ defmodule AshAuthentication.Phoenix.Components.SignIn do
   end
 
   defp strategy_style(%AshAuthentication.AddOn.Confirmation{}), do: nil
+  defp strategy_style(%Strategy.ApiKey{}), do: nil
   defp strategy_style(%Strategy.Password{}), do: :form
   defp strategy_style(%Strategy.MagicLink{}), do: :link
   defp strategy_style(_), do: :link
