@@ -88,6 +88,7 @@ defmodule AshAuthentication.Phoenix.Test.Router do
     sign_in_route register_path: "/register", reset_path: "/reset", auth_routes_prefix: "/auth"
     sign_out_route AuthController
     reset_route auth_routes_prefix: "/auth"
+
     auth_routes AuthController, Example.Accounts.User, path: "/auth"
 
     # Custom LiveView for components testing

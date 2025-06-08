@@ -14,8 +14,13 @@ defmodule AshAuthentication.Phoenix.Test.UserAuthPlug do
     if conn.assigns[:current_user] do
       conn
     else
-      path = conn.request_path
-      Phoenix.Controller.redirect(conn, to: "/sign-in?next=#{path}") |> Plug.Conn.halt()
+      # Use the config value here too
+      param_name = Keyword.get(opts, :redirect_param_name, "next")
+      sign_in_path = Keyword.get(opts, :sign_in_path, "/sign-in")
+      redirect_path = "#{sign_in_path}?#{param_name}=#{conn.request_path}"
+
+      Phoenix.Controller.redirect(conn, to: redirect_path)
+      |> Plug.Conn.halt()
     end
   end
 

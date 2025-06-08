@@ -41,11 +41,6 @@ defmodule AshAuthentication.Phoenix.Test.LiveUserAuth do
     # Sanitize the target path before redirecting to prevent open redirect attacks.
     next = Map.get(params, "next", "/")
     sanitized = AshAuthentication.Phoenix.Utils.Redirect.sanitize_path(next)
-
-    IO.inspect(params, label: "Params in :live_no_user")
-    IO.inspect(next, label: "Raw next param")
-    IO.inspect(sanitized, label: "Sanitized redirect target")
-
     {:halt, LiveView.redirect(socket, to: sanitized)}
   end
 end
